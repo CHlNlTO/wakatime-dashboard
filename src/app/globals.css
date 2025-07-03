@@ -1,26 +1,296 @@
+/* src/app/globals.css */
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  /* Custom developer-focused colors */
+  --color-cyber-blue-50: #f0f9ff;
+  --color-cyber-blue-100: #e0f2fe;
+  --color-cyber-blue-200: #bae6fd;
+  --color-cyber-blue-300: #7dd3fc;
+  --color-cyber-blue-400: #38bdf8;
+  --color-cyber-blue-500: #0ea5e9;
+  --color-cyber-blue-600: #0284c7;
+  --color-cyber-blue-700: #0369a1;
+  --color-cyber-blue-800: #075985;
+  --color-cyber-blue-900: #0c4a6e;
+
+  --color-electric-violet-50: #faf5ff;
+  --color-electric-violet-100: #f3e8ff;
+  --color-electric-violet-200: #e9d5ff;
+  --color-electric-violet-300: #d8b4fe;
+  --color-electric-violet-400: #c084fc;
+  --color-electric-violet-500: #a855f7;
+  --color-electric-violet-600: #9333ea;
+  --color-electric-violet-700: #7c3aed;
+  --color-electric-violet-800: #6b21a8;
+  --color-electric-violet-900: #581c87;
+
+  --color-neon-green-50: #f0fdf4;
+  --color-neon-green-100: #dcfce7;
+  --color-neon-green-200: #bbf7d0;
+  --color-neon-green-300: #86efac;
+  --color-neon-green-400: #4ade80;
+  --color-neon-green-500: #22c55e;
+  --color-neon-green-600: #16a34a;
+  --color-neon-green-700: #15803d;
+  --color-neon-green-800: #166534;
+  --color-neon-green-900: #14532d;
+
+  /* Developer-optimized fonts */
+  --font-mono: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+  --font-sans: "Inter", "system-ui", sans-serif;
+
+  /* Developer-focused radius and spacing */
+  --radius: 0.5rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --spacing-xs: 0.125rem;
+
+  /* Custom keyframes */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-in-from-bottom {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes glow-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 20px -5px var(--primary);
+    }
+    50% {
+      box-shadow: 0 0 30px -5px var(--primary);
+    }
+  }
+}
+
+/* Developer-focused theme using CSS variables */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.708 0.222 264.376);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    border-color: var(--border);
+    outline-color: color-mix(in srgb, var(--ring) 50%, transparent);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar for dark theme */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: var(--background);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: color-mix(
+      in srgb,
+      var(--muted-foreground) 20%,
+      transparent
+    );
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(
+      in srgb,
+      var(--muted-foreground) 40%,
+      transparent
+    );
+  }
+
+  /* Code-style selections */
+  ::selection {
+    background-color: color-mix(in srgb, var(--primary) 20%, transparent);
+    color: var(--foreground);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .glass-effect {
+    background: color-mix(in srgb, var(--background) 80%, transparent);
+    backdrop-filter: blur(8px);
+    border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  }
+
+  .glow-border {
+    border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+    box-shadow: 0 0 20px -5px color-mix(in srgb, var(--primary) 10%, transparent);
+  }
+
+  .metric-card {
+    background: color-mix(in srgb, var(--background) 80%, transparent);
+    backdrop-filter: blur(8px);
+    border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+  }
+
+  .metric-card:hover {
+    border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+    box-shadow: 0 0 20px -5px color-mix(in srgb, var(--primary) 10%, transparent);
+    transform: scale(1.02);
+  }
+
+  .dev-mono {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* Chart specific styling for dark mode */
+  .recharts-wrapper {
+    color: hsl(var(--foreground));
+  }
+
+  .recharts-cartesian-axis-tick {
+    fill: hsl(var(--muted-foreground));
+  }
+
+  .recharts-cartesian-axis-line {
+    stroke: hsl(var(--border));
+  }
+
+  .recharts-cartesian-grid-horizontal line,
+  .recharts-cartesian-grid-vertical line {
+    stroke: hsl(var(--border));
+    opacity: 0.3;
+  }
+
+  .recharts-reference-line-line {
+    stroke: hsl(var(--primary));
+    opacity: 0.5;
+  }
+
+  .recharts-tooltip-wrapper {
+    filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.1));
+  }
+
+  /* Bar chart specific colors for dark mode */
+  .recharts-bar-rectangle {
+    filter: brightness(1.1);
+  }
+
+  .dark .recharts-bar-rectangle {
+    filter: brightness(0.9);
+  }
+
+  .recharts-bar-rectangle:hover {
+    filter: brightness(1.2);
+  }
+
+  .dark .recharts-bar-rectangle:hover {
+    filter: brightness(1.1);
+  }
+
+  /* Pie chart tooltips */
+  .recharts-pie-sector:hover {
+    filter: brightness(1.1);
+  }
+
+  .dark .recharts-pie-sector:hover {
+    filter: brightness(1.2);
+  }
 }
