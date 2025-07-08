@@ -4,7 +4,6 @@ import { wakaTimeService } from "@/lib/wakatime";
 import { env } from "@/lib/env";
 import { z } from "zod";
 import { DemoResponse } from "@/types/demo";
-import { DashboardStats } from "@/types/wakatime";
 
 // Validation schema for query parameters
 const demoParamsSchema = z.object({
