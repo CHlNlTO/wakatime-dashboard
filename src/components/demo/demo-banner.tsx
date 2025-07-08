@@ -19,14 +19,15 @@ export function DemoBanner({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-lg border  bg-gradient-to-r from-cyber-blue-50 via-electric-violet-50 to-neon-green-50 dark:from-primary/10 dark:via-electric-violet-500/10 dark:to-neon-green-500/10 dark:border-cyber-blue-500/30 p-4",
+        "relative overflow-hidden rounded-lg border border-cyber-blue-500/30 bg-gradient-to-r from-primary/10 via-electric-violet-500/10 to-neon-green-500/10 p-4",
         className
       )}
     >
       {/* Animated background effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-cyber-blue-100/50 via-electric-violet-100/50 to-neon-green-100/50 dark:from-primary/5 dark:via-electric-violet-500/5 dark:to-neon-green-500/5 animate-pulse" />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-electric-violet-500/5 to-neon-green-500/5 animate-pulse" />
 
-      <div className="relative flex items-center justify-between gap-4">
+      {/* Desktop Layout - Original horizontal layout */}
+      <div className="relative hidden sm:flex sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           {/* Demo indicator icon */}
           <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 border border-primary/30">
@@ -69,9 +70,58 @@ export function DemoBanner({
         )}
       </div>
 
+      {/* Mobile Layout - New vertical layout */}
+      <div className="relative sm:hidden space-y-4">
+        {/* Top section - Icon, Title, and Live Data chip */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            {/* Demo indicator icon */}
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 border border-primary/30 flex-shrink-0">
+              <Eye className="h-5 w-5 text-primary" />
+            </div>
+
+            {/* Demo title */}
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-electric-violet-500" />
+              <span className="text-sm font-semibold text-foreground">
+                Demo Mode
+              </span>
+            </div>
+          </div>
+
+          {/* Live Data chip - top right on mobile */}
+          <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full flex-shrink-0">
+            Live Data
+          </span>
+        </div>
+
+        {/* User info section */}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <User className="h-3 w-3 flex-shrink-0" />
+          <span>
+            You&apos;re viewing{" "}
+            <span className="font-medium text-foreground">
+              {demoUser}&apos;s
+            </span>{" "}
+            real coding activity
+          </span>
+        </div>
+
+        {/* Switch to personal button - full width on mobile */}
+        {onSwitchToPersonal && (
+          <button
+            onClick={onSwitchToPersonal}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/20 rounded-lg border border-primary/20 hover:border-primary/30 transition-all duration-200"
+          >
+            <span>Use Your API Key</span>
+            <ArrowRight className="h-3 w-3 flex-shrink-0" />
+          </button>
+        )}
+      </div>
+
       {/* Bottom text */}
-      <div className="mt-3 pt-3 border-t border-border/50">
-        <p className="text-xs text-muted-foreground">
+      <div className="mt-4 pt-3 border-t border-border/50">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           💡 This dashboard shows real coding statistics to demonstrate the
           app&apos;s features.{" "}
           <span className="text-primary">
