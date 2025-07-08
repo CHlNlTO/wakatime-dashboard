@@ -19,12 +19,12 @@ export function DemoBanner({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-r from-primary/10 via-electric-violet-500/10 to-neon-green-500/10 p-4",
+        "relative overflow-hidden rounded-lg border  bg-gradient-to-r from-cyber-blue-50 via-electric-violet-50 to-neon-green-50 dark:from-primary/10 dark:via-electric-violet-500/10 dark:to-neon-green-500/10 dark:border-cyber-blue-500/30 p-4",
         className
       )}
     >
       {/* Animated background effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-electric-violet-500/5 to-neon-green-500/5 animate-pulse" />
+      <div className="absolute inset-0 bg-gradient-to-r from-cyber-blue-100/50 via-electric-violet-100/50 to-neon-green-100/50 dark:from-primary/5 dark:via-electric-violet-500/5 dark:to-neon-green-500/5 animate-pulse" />
 
       <div className="relative flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
