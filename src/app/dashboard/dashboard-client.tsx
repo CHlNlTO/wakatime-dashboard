@@ -5,7 +5,9 @@ import React, { useState } from "react";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { ApiKeyInput } from "@/components/auth/api-key-input";
+import { DemoBanner } from "@/components/demo/demo-banner";
 import { useApiKey } from "@/contexts/api-key-context";
+import { useDemoMode } from "@/hooks/use-demo-mode";
 import {
   useDashboardStats,
   useWakaTimeHealth,
@@ -24,10 +26,21 @@ export default function DashboardClient({ range }: DashboardClientProps) {
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
   const { isAuthenticated, clearApiKey } = useApiKey();
 
+  // Demo mode state
+  const {
+    isDemoMode,
+    demoData,
+    loading: isDemoLoading,
+    error: demoError,
+    enableDemoMode,
+    disableDemoMode,
+    refreshDemoData,
+  } = useDemoMode(range);
+
   // Theme management
   const { theme, toggleTheme } = useTheme();
 
-  // Data fetching (only when authenticated)
+  // Data fetching (only when authenticated and not in demo mode)
   const {
     data: dashboardData,
     loading: isDashboardLoading,
@@ -36,7 +49,7 @@ export default function DashboardClient({ range }: DashboardClientProps) {
     lastUpdated,
   } = useDashboardStats(range);
 
-  // Health check (only when authenticated)
+  // Health check (only when authenticated and not in demo mode)
   const {
     isHealthy,
     username,
@@ -47,8 +60,14 @@ export default function DashboardClient({ range }: DashboardClientProps) {
 
   // Auto-refresh functionality
   const { isAutoRefreshEnabled, toggleAutoRefresh } = useAutoRefresh(() => {
-    if (!isDashboardLoading && !isManualRefreshing && isAuthenticated) {
-      refreshData();
+    if (isDemoMode) {
+      if (!isDemoLoading && !isManualRefreshing) {
+        refreshDemoData();
+      }
+    } else {
+      if (!isDashboardLoading && !isManualRefreshing && isAuthenticated) {
+        refreshData();
+      }
     }
   }, 300000); // 5 minutes
 
@@ -56,7 +75,11 @@ export default function DashboardClient({ range }: DashboardClientProps) {
   const handleRefresh = async () => {
     setIsManualRefreshing(true);
     try {
-      await Promise.all([refreshData(), checkHealth()]);
+      if (isDemoMode) {
+        await refreshDemoData();
+      } else {
+        await Promise.all([refreshData(), checkHealth()]);
+      }
     } catch (error) {
       console.error("Refresh failed:", error);
     } finally {
@@ -64,26 +87,48 @@ export default function DashboardClient({ range }: DashboardClientProps) {
     }
   };
 
-  // Handle logout
+  // Handle logout / exit demo
   const handleLogout = () => {
-    clearApiKey();
+    if (isDemoMode) {
+      disableDemoMode();
+    } else {
+      clearApiKey();
+    }
   };
 
-  // Show API key input if not authenticated
-  if (!isAuthenticated) {
-    return <ApiKeyInput />;
+  // Handle demo mode activation
+  const handleDemoMode = async () => {
+    await enableDemoMode();
+  };
+
+  // Show API key input if not authenticated and not in demo mode
+  if (!isAuthenticated && !isDemoMode) {
+    return (
+      <ApiKeyInput
+        onSuccess={() => {
+          // Already handled by context
+        }}
+        onDemoMode={handleDemoMode}
+      />
+    );
   }
 
-  // Loading state
-  const isLoading = isDashboardLoading || isHealthLoading || isManualRefreshing;
+  // Determine current data and state
+  const currentData = isDemoMode ? demoData : dashboardData;
+  const currentLoading = isDemoMode ? isDemoLoading : isDashboardLoading;
+  const currentError = isDemoMode ? demoError : dashboardError;
+  const currentUsername = isDemoMode ? "Clark" : username;
 
-  // Error state - Connection error
-  if (healthError && !isHealthy) {
+  // Loading state
+  const isLoading = currentLoading || isHealthLoading || isManualRefreshing;
+
+  // Error state - Connection error (only for personal mode)
+  if (!isDemoMode && healthError && !isHealthy) {
     return (
       <div className="min-h-screen bg-background p-6">
         <div className="max-w-7xl mx-auto">
           <DashboardHeader
-            username={username || undefined}
+            username={currentUsername || undefined}
             lastUpdated={lastUpdated || undefined}
             isRefreshing={isLoading}
             onRefresh={handleRefresh}
@@ -103,12 +148,12 @@ export default function DashboardClient({ range }: DashboardClientProps) {
   }
 
   // Error state - Data error
-  if (dashboardError && !dashboardData) {
+  if (currentError && !currentData) {
     return (
       <div className="min-h-screen bg-background p-6">
         <div className="max-w-7xl mx-auto">
           <DashboardHeader
-            username={username || undefined}
+            username={currentUsername || undefined}
             lastUpdated={lastUpdated || undefined}
             isRefreshing={isLoading}
             onRefresh={handleRefresh}
@@ -117,9 +162,10 @@ export default function DashboardClient({ range }: DashboardClientProps) {
             isDark={theme === "dark"}
           />
           <DataErrorCard
-            error={dashboardError}
-            onRetry={refreshData}
-            isRetrying={isDashboardLoading}
+            error={currentError}
+            onRetry={isDemoMode ? refreshDemoData : refreshData}
+            isRetrying={currentLoading}
+            isDemoMode={isDemoMode}
           />
         </div>
       </div>
@@ -135,7 +181,7 @@ export default function DashboardClient({ range }: DashboardClientProps) {
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
           <DashboardHeader
-            username={username || undefined}
+            username={currentUsername || undefined}
             lastUpdated={lastUpdated || undefined}
             isRefreshing={isLoading}
             onRefresh={handleRefresh}
@@ -143,6 +189,11 @@ export default function DashboardClient({ range }: DashboardClientProps) {
             onLogout={handleLogout}
             isDark={theme === "dark"}
           />
+
+          {/* Demo Banner */}
+          {isDemoMode && (
+            <DemoBanner demoUser="Clark" onSwitchToPersonal={disableDemoMode} />
+          )}
 
           {/* Auto-refresh Toggle */}
           <div className="flex items-center justify-between">
@@ -170,10 +221,15 @@ export default function DashboardClient({ range }: DashboardClientProps) {
                 <span className="text-foreground font-medium">
                   {range === "last_7_days" ? "Last 7 days" : "Last 30 days"}
                 </span>
+                {isDemoMode && (
+                  <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
+                    Demo Mode
+                  </span>
+                )}
               </div>
             </div>
 
-            {dashboardError && (
+            {currentError && (
               <div className="flex items-center gap-2 text-sm text-destructive">
                 <AlertCircle className="h-4 w-4" />
                 <span>Some data may be outdated</span>
@@ -182,8 +238,8 @@ export default function DashboardClient({ range }: DashboardClientProps) {
           </div>
 
           {/* Dashboard Content */}
-          {dashboardData ? (
-            <DashboardLayout data={dashboardData} isLoading={isLoading} />
+          {currentData ? (
+            <DashboardLayout data={currentData} isLoading={isLoading} />
           ) : (
             <DashboardLayout
               data={{
@@ -270,10 +326,12 @@ function DataErrorCard({
   error,
   onRetry,
   isRetrying,
+  isDemoMode,
 }: {
   error: string;
   onRetry: () => void;
   isRetrying: boolean;
+  isDemoMode?: boolean;
 }) {
   return (
     <Card className="border-orange-500/20 bg-orange-500/5">
@@ -285,8 +343,8 @@ function DataErrorCard({
           Data Loading Failed
         </h3>
         <p className="text-sm text-muted-foreground mb-4">
-          We couldn&apos;t load your WakaTime data. This might be a temporary
-          issue.
+          We couldn&apos;t load the {isDemoMode ? "demo" : "WakaTime"} data.
+          This might be a temporary issue.
         </p>
         <div className="text-xs text-orange-500 bg-orange-500/10 rounded px-3 py-2 mb-4 dev-mono">
           {error}

@@ -23,20 +23,32 @@ export function ApiKeyProvider({ children }: ApiKeyProviderProps) {
   useEffect(() => {
     setMounted(true);
     // Try to load API key from sessionStorage on mount
-    const savedKey = sessionStorage.getItem("wakatime-api-key");
-    if (savedKey) {
-      setApiKeyState(savedKey);
+    try {
+      const savedKey = sessionStorage.getItem("wakatime-api-key");
+      if (savedKey) {
+        setApiKeyState(savedKey);
+      }
+    } catch (error) {
+      console.warn("Failed to load API key from sessionStorage:", error);
     }
   }, []);
 
   const setApiKey = (key: string) => {
     setApiKeyState(key);
-    sessionStorage.setItem("wakatime-api-key", key);
+    try {
+      sessionStorage.setItem("wakatime-api-key", key);
+    } catch (error) {
+      console.warn("Failed to save API key to sessionStorage:", error);
+    }
   };
 
   const clearApiKey = () => {
     setApiKeyState(null);
-    sessionStorage.removeItem("wakatime-api-key");
+    try {
+      sessionStorage.removeItem("wakatime-api-key");
+    } catch (error) {
+      console.warn("Failed to remove API key from sessionStorage:", error);
+    }
   };
 
   const isAuthenticated = Boolean(apiKey);

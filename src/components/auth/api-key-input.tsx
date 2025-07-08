@@ -5,15 +5,28 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useApiKey } from "@/contexts/api-key-context";
-import { Eye, EyeOff, Key, ExternalLink, AlertCircle } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Key,
+  ExternalLink,
+  AlertCircle,
+  Sparkles,
+  User,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ApiKeyInputProps {
   onSuccess?: () => void;
+  onDemoMode?: () => void;
   className?: string;
 }
 
-export function ApiKeyInput({ onSuccess, className }: ApiKeyInputProps) {
+export function ApiKeyInput({
+  onSuccess,
+  onDemoMode,
+  className,
+}: ApiKeyInputProps) {
   const { setApiKey } = useApiKey();
   const [inputValue, setInputValue] = useState("");
   const [showKey, setShowKey] = useState(false);
@@ -69,6 +82,10 @@ export function ApiKeyInput({ onSuccess, className }: ApiKeyInputProps) {
     }
   };
 
+  const handleDemoClick = () => {
+    onDemoMode?.();
+  };
+
   return (
     <div
       className={cn(
@@ -86,19 +103,20 @@ export function ApiKeyInput({ onSuccess, className }: ApiKeyInputProps) {
               Welcome to WakaTime Dashboard
             </CardTitle>
             <p className="text-muted-foreground mt-2">
-              Enter your WakaTime API key to view your coding statistics
+              View your coding statistics or explore the demo
             </p>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6">
+          {/* Personal API Key Section */}
           <div className="space-y-4">
             <div className="space-y-2">
               <label
                 htmlFor="api-key"
                 className="text-sm font-medium text-foreground"
               >
-                WakaTime API Key
+                Your WakaTime API Key
               </label>
               <div className="relative">
                 <input
@@ -158,6 +176,51 @@ export function ApiKeyInput({ onSuccess, className }: ApiKeyInputProps) {
             </Button>
           </div>
 
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or
+              </span>
+            </div>
+          </div>
+
+          {/* Demo Section */}
+          <div className="space-y-3">
+            <div className="text-center">
+              <h4 className="text-sm font-medium text-foreground mb-1">
+                Explore the Demo
+              </h4>
+              <p className="text-xs text-muted-foreground">
+                See the dashboard in action with real coding data
+              </p>
+            </div>
+
+            <Button
+              onClick={handleDemoClick}
+              variant="outline"
+              className="w-full border-primary/20 hover:border-primary/40 hover:bg-primary/5"
+            >
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <Sparkles className="h-4 w-4 text-electric-violet-500" />
+                  <User className="h-4 w-4 text-primary" />
+                </div>
+                <span>View Clark&apos;s Demo Stats</span>
+              </div>
+            </Button>
+
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground">
+                ✨ See real coding metrics and dashboard features
+              </p>
+            </div>
+          </div>
+
+          {/* Instructions */}
           <div className="pt-4 border-t border-border">
             <div className="space-y-3">
               <h4 className="text-sm font-medium text-foreground">
