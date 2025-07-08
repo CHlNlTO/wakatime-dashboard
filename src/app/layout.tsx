@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ApiKeyProvider } from "@/contexts/api-key-context";
 import { ErrorBoundary } from "@/components/error-boundary";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -93,6 +94,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             storageKey="wakatime-dashboard-theme"
           >
             <ApiKeyProvider>{children}</ApiKeyProvider>
+            <Analytics />
           </ThemeProvider>
         </ErrorBoundary>
       </body>
