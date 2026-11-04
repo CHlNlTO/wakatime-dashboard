@@ -3,10 +3,15 @@
 
 /*
  * App icon, matching public/icon.svg (the favicon): a rounded tile holding a
- * 3×3 grid of contribution cells that fill up column by column like rising
- * activity bars. The top-right cell is "today". Colored green, like GitHub's
- * own contribution graph — this is the only place in the app that departs
- * from the brand blue, since the mark is literally a mini contribution grid.
+ * 3×3 grid of contribution cells that spell a "W" for WakaTime. The five
+ * vertices of the W (two top tips, two bottom valleys, the centre peak) carry
+ * the stronger greens, the strokes between them a softer one, and the centre
+ * is the top level. Colored green, like GitHub's contribution graph — the
+ * only place in the app that departs from the brand blue.
+ *
+ *   ■ · ■
+ *   ■ ◆ ■      ◆ = centre peak, top level
+ *   ■ · ■
  *
  * `interactive` turns it into a small easter egg (used in the dashboard top
  * bar): hover a cell to outline it, click to step it up one contribution
@@ -30,9 +35,9 @@ const LEVEL_OPACITY = [0, 0.25, 0.45, 0.7, 1];
 
 /** Resting pattern, [column][row] top to bottom, as contribution levels. */
 const DEFAULT_LEVELS = [
-  [0, 0, 2],
-  [0, 3, 2],
-  [MAX_LEVEL, 3, 2],
+  [3, 2, 3], // left stroke: top tip, stroke, bottom valley
+  [0, MAX_LEVEL, 0], // centre peak only
+  [3, 2, 3], // right stroke
 ];
 
 type Phase = "play" | "win" | "reset";
