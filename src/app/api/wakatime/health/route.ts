@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
         },
         user: {
           username: healthCheck.data!.username,
+          githubUsername: healthCheck.data!.githubUsername,
           authenticated: healthCheck.data!.isAuthenticated,
         },
       },

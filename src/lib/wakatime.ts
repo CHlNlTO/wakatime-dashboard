@@ -94,7 +94,29 @@ class WakaTimeService {
    * Get current user information
    */
   async getCurrentUser(apiKey: string): Promise<ApiResponse<WakaTimeUser>> {
-    return this.makeRequest<WakaTimeUser>("/users/current", apiKey);
+    const response = await this.makeRequest<{ data: WakaTimeUser }>(
+      "/users/current",
+      apiKey
+    );
+
+    if (!response.success || !response.data) {
+      return {
+        success: false,
+        error: response.error || "Failed to fetch current user",
+        timestamp: response.timestamp,
+      };
+    }
+
+    const user = response.data.data ?? (response.data as unknown as WakaTimeUser);
+
+    return {
+      success: true,
+      data: {
+        ...user,
+        github_username: user.github_username ?? null,
+      },
+      timestamp: response.timestamp,
+    };
   }
 
   /**
@@ -418,10 +440,16 @@ class WakaTimeService {
    */
   async testConnection(
     apiKey: string
-  ): Promise<ApiResponse<{ username: string; isAuthenticated: boolean }>> {
+  ): Promise<
+    ApiResponse<{
+      username: string;
+      githubUsername: string | null;
+      isAuthenticated: boolean;
+    }>
+  > {
     const userResponse = await this.getCurrentUser(apiKey);
 
-    if (!userResponse.success) {
+    if (!userResponse.success || !userResponse.data) {
       return {
         success: false,
         error: `Authentication failed: ${userResponse.error}`,
@@ -429,10 +457,13 @@ class WakaTimeService {
       };
     }
 
+    const githubUsername = userResponse.data.github_username?.trim() || null;
+
     return {
       success: true,
       data: {
-        username: userResponse.data!.username,
+        username: userResponse.data.username,
+        githubUsername,
         isAuthenticated: true,
       },
       timestamp: new Date().toISOString(),

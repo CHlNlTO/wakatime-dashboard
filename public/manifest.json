@@ -4,11 +4,16 @@
   "description": "A modern, developer-focused dashboard for WakaTime analytics",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0d1117",
-  "theme_color": "#0ea5e9",
+  "background_color": "#0e0e0e",
+  "theme_color": "#0e0e0e",
   "orientation": "portrait-primary",
   "categories": ["productivity", "developer-tools"],
   "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
