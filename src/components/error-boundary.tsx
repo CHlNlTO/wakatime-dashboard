@@ -3,7 +3,6 @@
 
 import React from "react";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -100,72 +99,62 @@ function DefaultErrorFallback({
 }: ErrorFallbackProps) {
   const isDevelopment = process.env.NODE_ENV === "development";
 
+  // Plain markup on purpose: this renders when the app tree (theme, motion
+  // components) may itself be what failed.
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
-            <AlertTriangle className="h-6 w-6" />
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="w-full max-w-2xl rounded-[20px] border border-border bg-card p-1.5">
+        <div className="flex min-h-11 items-center pt-0.5 pb-2 pl-3">
+          <span className="text-[15px] font-medium text-foreground/90">
             Something went wrong
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-muted-foreground">
-            <p>
-              We&apos;re sorry, but something unexpected happened. This error
-              has been logged and we&apos;ll look into it.
+          </span>
+        </div>
+        <div className="space-y-4 rounded-[14px] border border-border bg-panel p-5">
+          <div className="flex items-start gap-3">
+            <div className="grid size-10 shrink-0 place-items-center rounded-xl border border-destructive/30 bg-destructive/10 text-destructive">
+              <AlertTriangle className="size-4" />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Something unexpected happened. The error has been logged.
             </p>
           </div>
 
           {isDevelopment && error && (
-            <div className="space-y-2">
-              <h4 className="font-semibold text-foreground">
-                Error Details (Development Mode):
-              </h4>
-              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
-                <pre className="text-sm text-destructive font-mono whitespace-pre-wrap overflow-auto">
-                  {error.toString()}
-                </pre>
-                {errorInfo && (
-                  <details className="mt-2">
-                    <summary className="cursor-pointer text-sm font-medium text-destructive">
-                      Component Stack
-                    </summary>
-                    <pre className="text-xs text-destructive/80 font-mono whitespace-pre-wrap mt-2">
-                      {errorInfo.componentStack}
-                    </pre>
-                  </details>
-                )}
-              </div>
+            <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-3">
+              <pre className="overflow-auto font-mono text-xs whitespace-pre-wrap text-destructive">
+                {error.toString()}
+              </pre>
+              {errorInfo && (
+                <details className="mt-2">
+                  <summary className="cursor-pointer font-mono text-xs text-destructive">
+                    component_stack
+                  </summary>
+                  <pre className="mt-2 font-mono text-xs whitespace-pre-wrap text-destructive/80">
+                    {errorInfo.componentStack}
+                  </pre>
+                </details>
+              )}
             </div>
           )}
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-2">
             <button
               onClick={resetError}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              className="inline-flex h-8 items-center gap-1.5 rounded-full bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              <RefreshCw className="h-4 w-4" />
-              Try Again
+              <RefreshCw className="size-3.5" />
+              Try again
             </button>
-
             <button
               onClick={() => (window.location.href = "/")}
-              className="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors"
+              className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted/60"
             >
-              <Home className="h-4 w-4" />
-              Go Home
+              <Home className="size-3.5" />
+              Go home
             </button>
           </div>
-
-          <div className="text-xs text-muted-foreground pt-2 border-t">
-            <p>
-              If this problem persists, please contact support with the error
-              details above.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

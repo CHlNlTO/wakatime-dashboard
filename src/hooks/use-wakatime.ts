@@ -138,6 +138,7 @@ export function useWakaTimeHealth() {
   const { apiKey, isAuthenticated } = useApiKey();
   const [isHealthy, setIsHealthy] = useState<boolean | null>(null);
   const [username, setUsername] = useState<string | null>(null);
+  const [githubUsername, setGithubUsername] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -145,6 +146,7 @@ export function useWakaTimeHealth() {
     if (!isAuthenticated || !apiKey) {
       setIsHealthy(false);
       setUsername(null);
+      setGithubUsername(null);
       setLoading(false);
       setError("No API key provided");
       return;
@@ -168,12 +170,15 @@ export function useWakaTimeHealth() {
       if (response.ok && result.status === "healthy") {
         setIsHealthy(true);
         setUsername(result.user?.username || null);
+        setGithubUsername(result.user?.githubUsername || null);
       } else {
         setIsHealthy(false);
+        setGithubUsername(null);
         setError(result.error || "Health check failed");
       }
     } catch (err) {
       setIsHealthy(false);
+      setGithubUsername(null);
       const errorMessage =
         err instanceof Error ? err.message : "Health check failed";
       setError(errorMessage);
@@ -188,6 +193,7 @@ export function useWakaTimeHealth() {
     } else {
       setIsHealthy(null);
       setUsername(null);
+      setGithubUsername(null);
       setLoading(false);
       setError(null);
     }
@@ -196,6 +202,7 @@ export function useWakaTimeHealth() {
   return {
     isHealthy,
     username,
+    githubUsername,
     loading,
     error,
     checkHealth,

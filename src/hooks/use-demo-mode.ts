@@ -11,12 +11,14 @@ export function useDemoMode(
   const [state, setState] = useState<{
     isDemoMode: boolean;
     demoData: DashboardStats | null;
+    githubUsername: string | null;
     loading: boolean;
     error: string | null;
     lastUpdated: string | null;
   }>({
     isDemoMode: false,
     demoData: null,
+    githubUsername: null,
     loading: false,
     error: null,
     lastUpdated: null,
@@ -43,6 +45,7 @@ export function useDemoMode(
       setState((prev) => ({
         ...prev,
         demoData: result.data || null,
+        githubUsername: result.githubUsername ?? null,
         lastUpdated: result.timestamp,
         loading: false,
       }));
@@ -67,6 +70,7 @@ export function useDemoMode(
     setState({
       isDemoMode: false,
       demoData: null,
+      githubUsername: null,
       loading: false,
       error: null,
       lastUpdated: null,
@@ -89,6 +93,7 @@ export function useDemoMode(
   return {
     isDemoMode: state.isDemoMode,
     demoData: state.demoData,
+    githubUsername: state.githubUsername,
     loading: state.loading,
     error: state.error,
     lastUpdated: state.lastUpdated,

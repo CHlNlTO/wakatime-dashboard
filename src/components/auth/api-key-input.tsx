@@ -2,18 +2,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { motion, useReducedMotion } from "motion/react";
+import { ArrowRight, ExternalLink, Eye, EyeOff, KeyRound } from "lucide-react";
+import { Button } from "@/components/motion/button/base";
+import { Input } from "@/components/motion/input";
+import { Loader } from "@/components/motion/loader";
+import { Panel } from "@/components/ui/panel";
+import { BrandMark } from "@/components/brand-mark";
 import { useApiKey } from "@/contexts/api-key-context";
-import {
-  Eye,
-  EyeOff,
-  Key,
-  ExternalLink,
-  AlertCircle,
-  Sparkles,
-  User,
-} from "lucide-react";
+import { EASE_OUT } from "@/lib/ease";
 import { cn } from "@/lib/utils";
 
 interface ApiKeyInputProps {
@@ -22,12 +19,9 @@ interface ApiKeyInputProps {
   className?: string;
 }
 
-export function ApiKeyInput({
-  onSuccess,
-  onDemoMode,
-  className,
-}: ApiKeyInputProps) {
+export function ApiKeyInput({ onSuccess, onDemoMode, className }: ApiKeyInputProps) {
   const { setApiKey } = useApiKey();
+  const reduce = useReducedMotion();
   const [inputValue, setInputValue] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
@@ -42,7 +36,6 @@ export function ApiKeyInput({
           "Content-Type": "application/json",
         },
       });
-
       const result = await response.json();
       return response.ok && result.status === "healthy";
     } catch (error) {
@@ -51,7 +44,10 @@ export function ApiKeyInput({
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event?: React.FormEvent) => {
+    event?.preventDefault();
+    if (isValidating) return;
+
     if (!inputValue.trim()) {
       setError("Please enter your WakaTime API key");
       return;
@@ -62,12 +58,11 @@ export function ApiKeyInput({
 
     try {
       const isValid = await validateApiKey(inputValue.trim());
-
       if (isValid) {
         setApiKey(inputValue.trim());
         onSuccess?.();
       } else {
-        setError("Invalid API key. Please check your key and try again.");
+        setError("Invalid API key. Check the key and try again.");
       }
     } catch {
       setError("Failed to validate API key. Please try again.");
@@ -76,185 +71,133 @@ export function ApiKeyInput({
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !isValidating && inputValue.trim()) {
-      handleSubmit();
-    }
-  };
-
-  const handleDemoClick = () => {
-    onDemoMode?.();
-  };
-
   return (
     <div
       className={cn(
-        "min-h-screen bg-background flex items-center justify-center p-4",
+        "relative flex min-h-screen items-center justify-center bg-background px-4 py-10",
         className
       )}
     >
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center space-y-4">
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mx-auto">
-            <Key className="h-8 w-8 text-primary" />
-          </div>
-          <div>
-            <CardTitle className="text-2xl font-bold">
-              Welcome to WakaTime Dashboard
-            </CardTitle>
-            <p className="text-muted-foreground mt-2">
-              View your coding statistics or explore the demo
-            </p>
-          </div>
-        </CardHeader>
+      <div aria-hidden className="bg-dot-grid pointer-events-none fixed inset-x-0 top-0 h-[520px]" />
 
-        <CardContent className="space-y-6">
-          {/* Personal API Key Section */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label
-                htmlFor="api-key"
-                className="text-sm font-medium text-foreground"
-              >
-                Your WakaTime API Key
-              </label>
-              <div className="relative">
-                <input
-                  id="api-key"
-                  type={showKey ? "text" : "password"}
-                  value={inputValue}
-                  onChange={(e) => {
-                    setInputValue(e.target.value);
-                    if (error) setError(null);
-                  }}
-                  onKeyPress={handleKeyPress}
-                  placeholder="waka_********-****-****-****-************"
-                  className={cn(
-                    "w-full px-3 py-2 pr-10 text-sm bg-background border rounded-lg",
-                    "focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent",
-                    "transition-colors",
-                    error
-                      ? "border-destructive focus:ring-destructive"
-                      : "border-border hover:border-muted-foreground"
-                  )}
-                  disabled={isValidating}
-                />
+      <div className="relative w-full max-w-md space-y-6">
+        <motion.div
+          className="space-y-2 text-center"
+          initial={reduce ? false : { opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE_OUT }}
+        >
+          <div className="flex items-center justify-center gap-3">
+            <BrandMark size={40} />
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              Developer Dashboard
+            </h1>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Your WakaTime coding stats, decoded.
+          </p>
+        </motion.div>
+
+        <Panel title="Connect WakaTime" delay={0.06} bodyClassName="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-3" noValidate>
+            <Input
+              id="api-key"
+              label="API key"
+              type={showKey ? "text" : "password"}
+              autoComplete="off"
+              spellCheck={false}
+              value={inputValue}
+              onChange={(value) => {
+                setInputValue(value);
+                if (error) setError(null);
+              }}
+              placeholder="waka_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+              error={error ?? undefined}
+              disabled={isValidating}
+              leftIcon={<KeyRound />}
+              rightIcon={
                 <button
                   type="button"
-                  onClick={() => setShowKey(!showKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={() => setShowKey((v) => !v)}
+                  aria-label={showKey ? "Hide API key" : "Show API key"}
+                  className="text-muted-foreground transition-colors hover:text-foreground"
                   disabled={isValidating}
                 >
-                  {showKey ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {showKey ? <EyeOff /> : <Eye />}
                 </button>
-              </div>
-              {error && (
-                <div className="flex items-center gap-2 text-sm text-destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>{error}</span>
-                </div>
-              )}
-            </div>
+              }
+              classNames={{
+                field: "rounded-xl bg-card",
+                input: "font-mono text-sm",
+              }}
+            />
 
             <Button
-              onClick={handleSubmit}
-              className="w-full"
+              type="submit"
+              className="w-full rounded-xl"
               disabled={isValidating || !inputValue.trim()}
             >
               {isValidating ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  <span>Validating...</span>
-                </div>
+                <>
+                  <Loader variant="spinner" size={14} label="Validating" />
+                  Validating…
+                </>
               ) : (
-                "Connect to WakaTime"
+                "Connect"
               )}
             </Button>
+          </form>
+
+          <div className="flex items-center gap-3 font-mono text-[11px] tracking-wider text-muted-foreground uppercase">
+            <span className="h-px flex-1 bg-border" />
+            or
+            <span className="h-px flex-1 bg-border" />
           </div>
 
-          {/* Divider */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or
-              </span>
-            </div>
-          </div>
+          <Button
+            variant="secondary"
+            onClick={onDemoMode}
+            className="group w-full rounded-xl"
+          >
+            <span className="inline-flex h-5 items-center rounded border border-warning/35 bg-warning/10 px-1.5 font-mono text-[10px] font-semibold tracking-wider text-warning uppercase">
+              Demo
+            </span>
+            Explore Clark&apos;s live stats
+            <ArrowRight className="size-3.5 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5" />
+          </Button>
 
-          {/* Demo Section */}
-          <div className="space-y-3">
-            <div className="text-center">
-              <h4 className="text-sm font-medium text-foreground mb-1">
-                Explore the Demo
-              </h4>
-              <p className="text-xs text-muted-foreground">
-                See the dashboard in action with real coding data
-              </p>
-            </div>
+          <ol className="space-y-2 rounded-xl border border-border bg-card p-3.5 text-sm text-muted-foreground">
+            {[
+              <>
+                Open your{" "}
+                <a
+                  href="https://wakatime.com/oauth"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-primary hover:underline"
+                >
+                  WakaTime OAuth page
+                  <ExternalLink className="size-3" />
+                </a>
+              </>,
+              "Copy your secret API key",
+              <>Paste it above and press Connect</>,
+            ].map((step, i) => (
+              <li key={i} className="flex gap-2.5">
+                <span className="font-mono text-xs leading-5 text-muted-foreground/70">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
 
-            <Button
-              onClick={handleDemoClick}
-              variant="outline"
-              className="w-full border-primary/20 hover:border-primary/40 hover:bg-primary/5"
-            >
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">
-                  <Sparkles className="h-4 w-4 text-electric-violet-500" />
-                  <User className="h-4 w-4 text-primary" />
-                </div>
-                <span>View Clark&apos;s Demo Stats</span>
-              </div>
-            </Button>
-
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground">
-                ✨ See real coding metrics and dashboard features
-              </p>
-            </div>
-          </div>
-
-          {/* Instructions */}
-          <div className="pt-4 border-t border-border">
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium text-foreground">
-                How to get your API key:
-              </h4>
-              <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                <li>
-                  Visit your{" "}
-                  <a
-                    href="https://wakatime.com/api-key"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline inline-flex items-center gap-1"
-                  >
-                    WakaTime API Key page
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                </li>
-                <li>Copy your secret API key</li>
-                <li>
-                  Paste it above and click &quot;Connect to WakaTime&quot;
-                </li>
-              </ol>
-            </div>
-          </div>
-
-          <div className="text-center">
-            <p className="text-xs text-muted-foreground">
-              Your API key is stored securely in your browser session and never
-              sent to our servers.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+          <p className="text-center text-xs text-muted-foreground">
+            Your key stays in this browser and is only sent to WakaTime
+            through this app&apos;s API proxy.
+          </p>
+        </Panel>
+      </div>
     </div>
   );
 }

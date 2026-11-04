@@ -11,6 +11,7 @@ export interface WakaTimeUser {
   website: string;
   human_readable_website: string;
   location: string;
+  github_username: string | null;
   logged_time_public: boolean;
   languages_used_public: boolean;
   is_hireable: boolean;

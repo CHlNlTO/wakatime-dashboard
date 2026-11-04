@@ -86,7 +86,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch demo dashboard data using Clark's API key
-    const response = await wakaTimeService.getDashboardData(apiKey, range);
+    const [response, userResponse] = await Promise.all([
+      wakaTimeService.getDashboardData(apiKey, range),
+      wakaTimeService.getCurrentUser(apiKey),
+    ]);
 
     if (!response.success) {
       console.error("❌ Demo WakaTime API Error:", response.error);
@@ -101,6 +104,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const githubUsername =
+      userResponse.success && userResponse.data?.github_username
+        ? userResponse.data.github_username.trim()
+        : null;
+
     console.log("✅ Demo data fetched successfully");
     console.log("🔢 Demo stats summary:", {
       totalSeconds: response.data?.totalTime.seconds,
@@ -109,6 +117,7 @@ export async function GET(request: NextRequest) {
       editorsCount: response.data?.topEditors.length,
       timelineLength: response.data?.weeklyTimeline.length,
       bestDaySeconds: response.data?.bestDay.totalSeconds,
+      githubUsername,
     });
 
     // Add demo metadata to response
@@ -118,6 +127,7 @@ export async function GET(request: NextRequest) {
       demoUser: "Clark",
       demoNote:
         "This is Clark's coding activity - a demonstration of the dashboard",
+      githubUsername,
     };
 
     // Cache the demo data

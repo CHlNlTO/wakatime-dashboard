@@ -1,21 +1,21 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ApiKeyProvider } from "@/contexts/api-key-context";
 import { ErrorBoundary } from "@/components/error-boundary";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 
-const inter = Inter({
+const geistSans = Geist({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-geist-sans",
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const geistMono = Geist_Mono({
   subsets: ["latin"],
-  variable: "--font-mono",
+  variable: "--font-geist-mono",
   display: "swap",
 });
 
@@ -70,7 +70,10 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "16x16 32x32 48x48" },
+    ],
     shortcut: "/favicon-16x16.png",
     apple: "/apple-touch-icon.png",
   },
@@ -86,13 +89,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="en" suppressHydrationWarning>
       <head />
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-background font-sans text-foreground antialiased`}
       >
         <ErrorBoundary>
-          <ThemeProvider
-            defaultTheme="dark"
-            storageKey="wakatime-dashboard-theme"
-          >
+          <ThemeProvider>
             <ApiKeyProvider>{children}</ApiKeyProvider>
             <Analytics />
           </ThemeProvider>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Rounded tile -->
+  <rect x="1" y="1" width="62" height="62" rx="16" fill="#141414"/>
+  <rect x="1.75" y="1.75" width="60.5" height="60.5" rx="15.25" fill="none" stroke="#ffffff" stroke-opacity="0.12" stroke-width="1.5"/>
+  <!-- 3x3 contribution cells filling up column by column, like rising activity bars.
+       Green, like GitHub's own contribution graph. -->
+  <g>
+    <!-- column 1: one day lit -->
+    <rect x="11" y="11" width="12" height="12" rx="3" fill="#ffffff" fill-opacity="0.08"/>
+    <rect x="11" y="26" width="12" height="12" rx="3" fill="#ffffff" fill-opacity="0.08"/>
+    <rect x="11" y="41" width="12" height="12" rx="3" fill="#2ea043" fill-opacity="0.4"/>
+    <!-- column 2: two days lit -->
+    <rect x="26" y="11" width="12" height="12" rx="3" fill="#ffffff" fill-opacity="0.08"/>
+    <rect x="26" y="26" width="12" height="12" rx="3" fill="#2ea043" fill-opacity="0.65"/>
+    <rect x="26" y="41" width="12" height="12" rx="3" fill="#2ea043" fill-opacity="0.4"/>
+    <!-- column 3: full, top cell is "today" -->
+    <rect x="41" y="11" width="12" height="12" rx="3" fill="#3fb950"/>
+    <rect x="41" y="26" width="12" height="12" rx="3" fill="#2ea043" fill-opacity="0.65"/>
+    <rect x="41" y="41" width="12" height="12" rx="3" fill="#2ea043" fill-opacity="0.4"/>
+  </g>
+</svg>

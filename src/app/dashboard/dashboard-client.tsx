@@ -8,15 +8,16 @@ import { ApiKeyInput } from "@/components/auth/api-key-input";
 import { DemoBanner } from "@/components/demo/demo-banner";
 import { useApiKey } from "@/contexts/api-key-context";
 import { useDemoMode } from "@/hooks/use-demo-mode";
+import { useCardLayout } from "@/hooks/use-card-layout";
 import {
   useDashboardStats,
   useWakaTimeHealth,
   useAutoRefresh,
 } from "@/hooks/use-wakatime";
-import { useTheme } from "@/components/theme-provider";
-import { AlertCircle, Wifi, WifiOff, LogOut } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { AlertCircle, LogOut, RefreshCw, WifiOff } from "lucide-react";
+import { Button } from "@/components/motion/button/base";
+import { Panel } from "@/components/ui/panel";
+import { SettingsDialog } from "@/components/settings/settings-dialog";
 
 interface DashboardClientProps {
   range: "last_7_days" | "last_30_days";
@@ -24,21 +25,20 @@ interface DashboardClientProps {
 
 export default function DashboardClient({ range }: DashboardClientProps) {
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
+  const cardLayout = useCardLayout();
   const { isAuthenticated, clearApiKey } = useApiKey();
 
   // Demo mode state
   const {
     isDemoMode,
     demoData,
+    githubUsername: demoGithubUsername,
     loading: isDemoLoading,
     error: demoError,
     enableDemoMode,
     disableDemoMode,
     refreshDemoData,
   } = useDemoMode(range);
-
-  // Theme management
-  const { theme, toggleTheme } = useTheme();
 
   // Data fetching (only when authenticated and not in demo mode)
   const {
@@ -53,6 +53,7 @@ export default function DashboardClient({ range }: DashboardClientProps) {
   const {
     isHealthy,
     username,
+    githubUsername: personalGithubUsername,
     loading: isHealthLoading,
     error: healthError,
     checkHealth,
@@ -118,241 +119,174 @@ export default function DashboardClient({ range }: DashboardClientProps) {
   const currentLoading = isDemoMode ? isDemoLoading : isDashboardLoading;
   const currentError = isDemoMode ? demoError : dashboardError;
   const currentUsername = isDemoMode ? "Clark" : username;
+  const currentGithubUsername = isDemoMode
+    ? demoGithubUsername
+    : personalGithubUsername;
 
   // Loading state
   const isLoading = currentLoading || isHealthLoading || isManualRefreshing;
 
+  const rangeLabel = range === "last_7_days" ? "Last 7 days" : "Last 30 days";
+
+  const header = (
+    <DashboardHeader
+      onResetLayout={cardLayout.isCustom ? cardLayout.reset : undefined}
+      settingsSlot={
+        <SettingsDialog
+          isDemoMode={isDemoMode}
+          health={{
+            isHealthy,
+            username,
+            githubUsername: personalGithubUsername,
+            loading: isHealthLoading,
+            error: healthError,
+          }}
+        />
+      }
+      username={currentUsername || undefined}
+      lastUpdated={lastUpdated || undefined}
+      isRefreshing={isLoading}
+      onRefresh={handleRefresh}
+      onLogout={handleLogout}
+      isDemoMode={isDemoMode}
+      hasError={Boolean(currentError)}
+      rangeLabel={rangeLabel}
+      autoRefresh={{ enabled: isAutoRefreshEnabled, onToggle: toggleAutoRefresh }}
+    />
+  );
+
   // Error state - Connection error (only for personal mode)
   if (!isDemoMode && healthError && !isHealthy) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-7xl mx-auto">
-          <DashboardHeader
-            username={currentUsername || undefined}
-            lastUpdated={lastUpdated || undefined}
-            isRefreshing={isLoading}
-            onRefresh={handleRefresh}
-            onToggleTheme={toggleTheme}
-            onLogout={handleLogout}
-            isDark={theme === "dark"}
-          />
-          <ConnectionErrorCard
-            error={healthError}
-            onRetry={checkHealth}
-            onLogout={handleLogout}
-            isRetrying={isHealthLoading}
-          />
-        </div>
-      </div>
+      <PageShell>
+        {header}
+        <ErrorPanel
+          title="Connection failed"
+          icon={<WifiOff />}
+          message="Unable to reach the WakaTime API. Check your API key and network connection."
+          detail={healthError}
+        >
+          <Button onClick={checkHealth} disabled={isHealthLoading} size="sm">
+            <RefreshCw className={isHealthLoading ? "size-3.5 animate-spin" : "size-3.5"} />
+            {isHealthLoading ? "Retrying…" : "Retry connection"}
+          </Button>
+          <Button onClick={handleLogout} variant="outline" size="sm">
+            <LogOut className="size-3.5" />
+            Use a different key
+          </Button>
+        </ErrorPanel>
+      </PageShell>
     );
   }
 
   // Error state - Data error
   if (currentError && !currentData) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-7xl mx-auto">
-          <DashboardHeader
-            username={currentUsername || undefined}
-            lastUpdated={lastUpdated || undefined}
-            isRefreshing={isLoading}
-            onRefresh={handleRefresh}
-            onToggleTheme={toggleTheme}
-            onLogout={handleLogout}
-            isDark={theme === "dark"}
-          />
-          <DataErrorCard
-            error={currentError}
-            onRetry={isDemoMode ? refreshDemoData : refreshData}
-            isRetrying={currentLoading}
-            isDemoMode={isDemoMode}
-          />
-        </div>
-      </div>
+      <PageShell>
+        {header}
+        <ErrorPanel
+          title="Data loading failed"
+          icon={<AlertCircle />}
+          message={`We couldn't load the ${isDemoMode ? "demo" : "WakaTime"} data. This is usually temporary.`}
+          detail={currentError}
+        >
+          <Button
+            onClick={isDemoMode ? refreshDemoData : refreshData}
+            disabled={currentLoading}
+            size="sm"
+          >
+            <RefreshCw className={currentLoading ? "size-3.5 animate-spin" : "size-3.5"} />
+            {currentLoading ? "Retrying…" : "Retry"}
+          </Button>
+        </ErrorPanel>
+      </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Background Pattern */}
-      <div className="fixed inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none" />
+    <PageShell>
+      {header}
 
-      <div className="relative z-10 p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          {/* Header */}
-          <DashboardHeader
-            username={currentUsername || undefined}
-            lastUpdated={lastUpdated || undefined}
-            isRefreshing={isLoading}
-            onRefresh={handleRefresh}
-            onToggleTheme={toggleTheme}
-            onLogout={handleLogout}
-            isDark={theme === "dark"}
-          />
+      {isDemoMode && (
+        <DemoBanner demoUser="Clark" onSwitchToPersonal={disableDemoMode} />
+      )}
 
-          {/* Demo Banner */}
-          {isDemoMode && (
-            <DemoBanner demoUser="Clark" onSwitchToPersonal={disableDemoMode} />
-          )}
-
-          {/* Auto-refresh Toggle */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={toggleAutoRefresh}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                  isAutoRefreshEnabled
-                    ? "bg-neon-green-500/10 text-neon-green-500 border border-neon-green-500/20"
-                    : "bg-secondary/50 text-muted-foreground border border-border/50"
-                }`}
-              >
-                {isAutoRefreshEnabled ? (
-                  <Wifi className="h-3 w-3" />
-                ) : (
-                  <WifiOff className="h-3 w-3" />
-                )}
-                <span className="dev-mono">
-                  Auto-refresh {isAutoRefreshEnabled ? "ON" : "OFF"}
-                </span>
-              </button>
-
-              <div className="text-sm text-muted-foreground">
-                Showing data for:{" "}
-                <span className="text-foreground font-medium">
-                  {range === "last_7_days" ? "Last 7 days" : "Last 30 days"}
-                </span>
-                {isDemoMode && (
-                  <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
-                    Demo Mode
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {currentError && (
-              <div className="flex items-center gap-2 text-sm text-destructive">
-                <AlertCircle className="h-4 w-4" />
-                <span>Some data may be outdated</span>
-              </div>
-            )}
-          </div>
-
-          {/* Dashboard Content */}
-          {currentData ? (
-            <DashboardLayout data={currentData} isLoading={isLoading} />
-          ) : (
-            <DashboardLayout
-              data={{
-                totalTime: {
-                  seconds: 0,
-                  humanReadable: "0 mins",
-                  dailyAverage: 0,
-                  dailyAverageText: "0 mins",
-                },
-                allTimeStats: undefined,
-                languages: [],
-                weeklyTimeline: [],
-                topProjects: [],
-                topEditors: [],
-                bestDay: {
-                  date: "",
-                  totalSeconds: 0,
-                  text: "0 mins",
-                },
-                range: {
-                  start: "",
-                  end: "",
-                  timezone: "UTC",
-                },
-                lastUpdated: "",
-              }}
-              isLoading={true}
-            />
-          )}
+      {currentError && currentData ? (
+        <div className="flex items-center gap-2 px-1 text-sm text-warning">
+          <AlertCircle className="size-4" />
+          <span>Showing cached data. The last refresh failed.</span>
         </div>
-      </div>
+      ) : null}
+
+      <DashboardLayout
+        data={currentData ?? EMPTY_STATS}
+        rangeLabel={rangeLabel}
+        isLoading={!currentData}
+        githubUsername={currentGithubUsername}
+        onRefreshGithubProfile={
+          isDemoMode ? refreshDemoData : () => void checkHealth()
+        }
+        isRefreshingGithubProfile={isDemoMode ? isDemoLoading : isHealthLoading}
+        order={cardLayout.order}
+        onMoveCard={cardLayout.move}
+      />
+    </PageShell>
+  );
+}
+
+const EMPTY_STATS = {
+  totalTime: {
+    seconds: 0,
+    humanReadable: "0 mins",
+    dailyAverage: 0,
+    dailyAverageText: "0 mins",
+  },
+  allTimeStats: undefined,
+  languages: [],
+  weeklyTimeline: [],
+  topProjects: [],
+  topEditors: [],
+  bestDay: { date: "", totalSeconds: 0, text: "0 mins" },
+  range: { start: "", end: "", timezone: "UTC" },
+  lastUpdated: "",
+};
+
+function PageShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative min-h-screen bg-background">
+      <div aria-hidden className="bg-dot-grid pointer-events-none fixed inset-x-0 top-0 h-[520px]" />
+      <main className="relative mx-auto max-w-7xl space-y-4 px-4 py-6 sm:px-6 sm:py-8">
+        {children}
+      </main>
     </div>
   );
 }
 
-// Connection Error Component
-function ConnectionErrorCard({
-  error,
-  onRetry,
-  onLogout,
-  isRetrying,
+function ErrorPanel({
+  title,
+  icon,
+  message,
+  detail,
+  children,
 }: {
-  error: string;
-  onRetry: () => void;
-  onLogout: () => void;
-  isRetrying: boolean;
+  title: string;
+  icon: React.ReactNode;
+  message: string;
+  detail: string;
+  children: React.ReactNode;
 }) {
   return (
-    <Card className="border-destructive/20 bg-destructive/5">
-      <CardContent className="p-6 text-center">
-        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-destructive/10 mx-auto mb-4">
-          <WifiOff className="h-6 w-6 text-destructive" />
+    <Panel title={title} className="mx-auto max-w-2xl">
+      <div className="flex flex-col items-center gap-4 py-4 text-center">
+        <div className="grid size-11 place-items-center rounded-xl border border-destructive/30 bg-destructive/10 text-destructive [&_svg]:size-5">
+          {icon}
         </div>
-        <h3 className="font-semibold text-foreground mb-2">
-          Connection Failed
-        </h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Unable to connect to WakaTime API. Please check your API key and
-          network connection.
-        </p>
-        <div className="text-xs text-destructive bg-destructive/10 rounded px-3 py-2 mb-4 dev-mono">
-          {error}
-        </div>
-        <div className="flex gap-2 justify-center">
-          <Button onClick={onRetry} disabled={isRetrying} variant="default">
-            {isRetrying ? "Retrying..." : "Retry Connection"}
-          </Button>
-          <Button
-            onClick={onLogout}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            Use Different API Key
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// Data Error Component
-function DataErrorCard({
-  error,
-  onRetry,
-  isRetrying,
-  isDemoMode,
-}: {
-  error: string;
-  onRetry: () => void;
-  isRetrying: boolean;
-  isDemoMode?: boolean;
-}) {
-  return (
-    <Card className="border-orange-500/20 bg-orange-500/5">
-      <CardContent className="p-6 text-center">
-        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-orange-500/10 mx-auto mb-4">
-          <AlertCircle className="h-6 w-6 text-orange-500" />
-        </div>
-        <h3 className="font-semibold text-foreground mb-2">
-          Data Loading Failed
-        </h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          We couldn&apos;t load the {isDemoMode ? "demo" : "WakaTime"} data.
-          This might be a temporary issue.
-        </p>
-        <div className="text-xs text-orange-500 bg-orange-500/10 rounded px-3 py-2 mb-4 dev-mono">
-          {error}
-        </div>
-        <Button onClick={onRetry} disabled={isRetrying}>
-          {isRetrying ? "Retrying..." : "Retry Loading"}
-        </Button>
-      </CardContent>
-    </Card>
+        <p className="max-w-md text-sm text-muted-foreground">{message}</p>
+        <pre className="w-full overflow-x-auto rounded-xl border border-border bg-card px-3 py-2 text-left font-mono text-xs text-destructive">
+          {detail}
+        </pre>
+        <div className="flex flex-wrap justify-center gap-2">{children}</div>
+      </div>
+    </Panel>
   );
 }
